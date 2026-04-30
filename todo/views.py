@@ -6,6 +6,19 @@ from .models import Task
 from .forms import TaskForm, TaskEditForm
 
 
+def _sidebar_categories():
+    """Return sidebar category data: (slug, label, emoji, count)."""
+    categories = []
+    for slug, label in Task.CATEGORY_CHOICES:
+        emojis = {
+            'personal': '🏠', 'work': '💼', 'shopping': '🛒',
+            'health': '❤️', 'education': '📚', 'finance': '💰', 'other': '📌',
+        }
+        count = Task.objects.filter(category=slug).count()
+        categories.append((slug, label, emojis.get(slug, '📌'), count))
+    return categories
+
+
 class TaskListView(ListView):
     """Display all tasks with filtering and search capabilities."""
     model = Task
@@ -50,6 +63,8 @@ class TaskListView(ListView):
         context['current_priority'] = self.request.GET.get('priority', 'all')
         context['current_category'] = self.request.GET.get('category', 'all')
         context['current_search'] = self.request.GET.get('search', '')
+        # Sidebar categories
+        context['categories_sidebar'] = _sidebar_categories()
         return context
 
 
@@ -60,7 +75,7 @@ class TaskCreateView(CreateView):
     template_name = 'todo/task_form.html'
 
     def form_valid(self, form):
-        messages.success(self.request, 'Task created successfully! Time to get things done.')
+        messages.success(self.request, 'Task created successfully!')
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -88,7 +103,7 @@ class TaskDeleteView(DeleteView):
     success_url = reverse_lazy('task-list')
 
     def form_valid(self, form):
-        messages.success(self.request, 'Task deleted. Sometimes less is more!')
+        messages.success(self.request, 'Task deleted!')
         return super().form_valid(form)
 
 
@@ -98,9 +113,9 @@ def toggle_task(request, pk):
     task.completed = not task.completed
     task.save()
     if task.completed:
-        messages.success(request, f'Nice work! "{task.title}" marked as complete!')
+        messages.success(request, f'Nice work! "{task.title}" completed!')
     else:
-        messages.info(request, f'"{task.title}" moved back to active tasks.')
+        messages.info(request, f'"{task.title}" moved back to active.')
     return redirect('task-list')
 
 
@@ -110,7 +125,7 @@ def clear_completed(request):
     count = completed.count()
     if count > 0:
         completed.delete()
-        messages.success(request, f'{count} completed task{"s" if count > 1 else ""} cleared! Fresh start.')
+        messages.success(request, f'{count} completed task{"s" if count > 1 else ""} cleared!')
     else:
         messages.info(request, 'No completed tasks to clear.')
     return redirect('task-list')
