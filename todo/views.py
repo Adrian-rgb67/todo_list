@@ -185,11 +185,28 @@ def export_tasks(request):
 
     dataset = resource.export(queryset)
 
+    # Build format map dynamically so we only expose formats that are actually available
     format_map = {
         'csv': ('text/csv', 'csv', dataset.csv),
         'json': ('application/json', 'json', dataset.json),
-        'xlsx': ('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'xlsx', dataset.xlsx),
     }
+
+    # XLSX requires openpyxl — only add it if the library is installed
+    try:
+        import openpyxl  # noqa: F401
+        format_map['xlsx'] = (
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'xlsx',
+            dataset.xlsx,
+        )
+    except ImportError:
+        if file_format == 'xlsx':
+            messages.warning(
+                request,
+                'XLSX export requires the openpyxl package. '
+                'Run: pip install openpyxl  —  falling back to CSV.',
+            )
+            file_format = 'csv'
 
     if file_format not in format_map:
         file_format = 'csv'
