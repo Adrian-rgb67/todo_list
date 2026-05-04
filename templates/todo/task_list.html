@@ -11,7 +11,7 @@
             <div class="w-7 h-7 bg-brand-50 rounded-lg flex items-center justify-center">
                 <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             </div>
-            <h2 class="text-sm font-semibold text-gray-800">Today's Task</h2>
+            <h2 class="text-sm font-semibold text-gray-800">Quick Add</h2>
         </div>
         <form method="post" action="{% url 'task-create' %}" class="flex items-center gap-3">
             {% csrf_token %}
@@ -62,10 +62,10 @@
     {% endif %}
 
     <!-- Filter Bar -->
-    <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center space-x-2">
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div class="flex items-center space-x-2 flex-wrap gap-y-1">
             <a href="{% url 'task-list' %}" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors
-                {% if current_status == 'all' and current_priority == 'all' and current_category == 'all' %}bg-brand-50 text-brand-600{% else %}text-gray-500 hover:bg-gray-100{% endif %}">
+                {% if current_status == 'all' and current_priority == 'all' and current_category == 'all' and current_group == 'all' %}bg-brand-50 text-brand-600{% else %}text-gray-500 hover:bg-gray-100{% endif %}">
                 All
             </a>
             <a href="{% url 'task-list' %}?status=active" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors
@@ -76,9 +76,9 @@
                 {% if current_status == 'completed' %}bg-emerald-50 text-emerald-600{% else %}text-gray-500 hover:bg-gray-100{% endif %}">
                 Completed
             </a>
-            {% if current_priority != 'all' or current_category != 'all' or current_search %}
+            {% if current_priority != 'all' or current_category != 'all' or current_group != 'all' or current_search %}
             <a href="{% url 'task-list' %}" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
-                Clear filters
+                Clear
             </a>
             {% endif %}
         </div>
@@ -86,20 +86,30 @@
             <!-- Search -->
             <form method="get" class="relative">
                 <input type="text" name="search" value="{{ current_search }}" placeholder="Search..."
-                       class="w-40 px-3 py-1.5 pl-8 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all">
+                       class="w-36 px-3 py-1.5 pl-8 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all">
                 <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </form>
-            <!-- Category dropdown -->
+            <!-- Group filter -->
+            {% if all_groups.exists %}
             <select onchange="window.location.href=this.value" class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-brand-500 outline-none">
-                <option value="{% url 'task-list' %}" {% if current_category == 'all' %}selected{% endif %}>All Categories</option>
-                <option value="{% url 'task-list' %}?category=personal" {% if current_category == 'personal' %}selected{% endif %}>🏠 Personal</option>
-                <option value="{% url 'task-list' %}?category=work" {% if current_category == 'work' %}selected{% endif %}>💼 Work</option>
-                <option value="{% url 'task-list' %}?category=shopping" {% if current_category == 'shopping' %}selected{% endif %}>🛒 Shopping</option>
-                <option value="{% url 'task-list' %}?category=health" {% if current_category == 'health' %}selected{% endif %}>❤️ Health</option>
-                <option value="{% url 'task-list' %}?category=education" {% if current_category == 'education' %}selected{% endif %}>📚 Education</option>
-                <option value="{% url 'task-list' %}?category=finance" {% if current_category == 'finance' %}selected{% endif %}>💰 Finance</option>
-                <option value="{% url 'task-list' %}?category=other" {% if current_category == 'other' %}selected{% endif %}>📌 Other</option>
+                <option value="{% url 'task-list' %}" {% if current_group == 'all' %}selected{% endif %}>All Teams</option>
+                {% for g in all_groups %}
+                <option value="{% url 'task-list' %}?group={{ g.id }}" {% if current_group == g.id|stringformat:"s" %}selected{% endif %}>{{ g.name }}</option>
+                {% endfor %}
             </select>
+            {% endif %}
+            <!-- Export dropdown -->
+            <div class="relative group">
+                <button class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-500 hover:bg-gray-50 transition-colors flex items-center space-x-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Export</span>
+                </button>
+                <div class="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-xl shadow-lg py-1 hidden group-hover:block z-10">
+                    <a href="{% url 'task-export' %}?format=csv" class="block px-3 py-2 text-xs text-gray-600 hover:bg-gray-50">CSV</a>
+                    <a href="{% url 'task-export' %}?format=json" class="block px-3 py-2 text-xs text-gray-600 hover:bg-gray-50">JSON</a>
+                    <a href="{% url 'task-export' %}?format=xlsx" class="block px-3 py-2 text-xs text-gray-600 hover:bg-gray-50">Excel (XLSX)</a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -120,7 +130,7 @@
                 </div>
             </a>
 
-            <!-- Left priority strip -->
+            <!-- Priority strip -->
             <div class="w-1 h-8 rounded-full flex-shrink-0
                 {% if task.priority == 'high' %}bg-amber-400
                 {% elif task.priority == 'medium' %}bg-blue-400
@@ -139,15 +149,28 @@
                     {{ task.description|truncatewords:12 }}
                 </p>
                 {% endif %}
-                <div class="flex items-center gap-2 mt-1">
+                <div class="flex items-center gap-2 mt-1 flex-wrap">
                     <span class="text-xs text-gray-400">{{ task.category_emoji }} {{ task.get_category_display }}</span>
                     {% if task.due_date %}
                     <span class="text-xs text-gray-400">{{ task.due_date|date:"M d" }}</span>
                     {% endif %}
+                    <!-- Assignment badges -->
+                    {% if task.assigned_to %}
+                    <span class="inline-flex items-center space-x-1 text-xs text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded-md">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        <span>{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</span>
+                    </span>
+                    {% endif %}
+                    {% if task.assigned_group %}
+                    <span class="inline-flex items-center space-x-1 text-xs text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded-md">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span>{{ task.assigned_group.name }}</span>
+                    </span>
+                    {% endif %}
                 </div>
             </div>
 
-            <!-- Priority Badge -->
+            <!-- Priority dot -->
             {% if task.priority == 'high' %}
             <span class="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-amber-400" title="High priority"></span>
             {% elif task.priority == 'medium' %}
