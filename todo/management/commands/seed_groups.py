@@ -27,10 +27,10 @@ class Command(BaseCommand):
 
         # Create sample users
         users_data = [
-            ('supervisor1', 'supervisor1@taskflow.com', 'Super@123', 'Supervisor', 'Alice', 'Johnson'),
-            ('worker1', 'worker1@taskflow.com', 'Worker@123', 'Worker', 'Bob', 'Smith'),
-            ('worker2', 'worker2@taskflow.com', 'Worker@123', 'Worker', 'Carol', 'Williams'),
-            ('manager1', 'manager1@taskflow.com', 'Manager@123', 'Manager', 'David', 'Brown'),
+            ('supervisor1', 'supervisor1@todolist.com', 'Super@123', 'Supervisor', 'Alice', 'Johnson'),
+            ('worker1', 'worker1@todolist.com', 'Worker@123', 'Worker', 'Bob', 'Smith'),
+            ('worker2', 'worker2@todolist.com', 'Worker@123', 'Worker', 'Carol', 'Williams'),
+            ('manager1', 'manager1@todolist.com', 'Manager@123', 'Manager', 'David', 'Brown'),
         ]
 
         for username, email, password, group_name, first_name, last_name in users_data:

@@ -1,4 +1,4 @@
-# TaskFlow — Django 6 + Tailwind CDN Todo App
+# To Do List — Django 6 + Tailwind CDN App
 
 A creative, detail-rich todo list web application built with **Django 6** and **Tailwind CSS via CDN**. No APIs, no complications — just clean Django with beautiful styling.
 
